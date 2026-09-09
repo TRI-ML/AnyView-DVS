@@ -1,0 +1,27 @@
+THIRD-PARTY LICENSES
+
+1. NVIDIA cosmos-predict2 (Apache License 2.0)
+   Portions of this repository (the anyview/vendor/ package, a trimmed
+   plain-torch subset) are derived from NVIDIA's cosmos-predict2 project:
+       https://github.com/nvidia-cosmos/cosmos-predict2
+   Copyright (c) NVIDIA CORPORATION and affiliates. All rights reserved.
+   Licensed under the Apache License, Version 2.0. Full text:
+   licenses/APACHE-2.0.txt. TRI modifications to these subtrees are licensed as
+   stated in LICENSE.
+
+2. NVIDIA Open Model License (origin of the model weights)
+   The released AnyView model weights were initialized from the NVIDIA
+   Cosmos-Predict2 base model, whose weights are distributed under the NVIDIA
+   Open Model License:
+       https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/
+   Derivative-model conditions (attribution and inclusion of a license copy)
+   apply to the released weights in addition to the terms stated in LICENSE.
+
+3. Kubric (Apache License 2.0)
+   The Kubric-4D and Kubric-5D data were generated using the Kubric simulator:
+       https://github.com/google-research/kubric
+   Licensed under the Apache License, Version 2.0 (licenses/APACHE-2.0.txt).
+
+4. Source datasets referenced by AnyViewBench
+   See LICENSE section 3, the per-folder SOURCE_LICENSE.txt files, and
+   docs/RESTRICTED_DATA.md for the licenses governing dataset pixels.
