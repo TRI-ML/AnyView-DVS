@@ -5,16 +5,19 @@ listing is disabled, so every tier includes a manifest (one JSON line per file w
 sha256). Downloads run in parallel over plain HTTPS, resume by skipping files whose size and
 sha256 already match, and verify every file.
 
-The benchmark trees and the Kubric-5D subset are distributed as archives (see the README); this
-script serves the tiers that are too large for one archive.
+Tiers: Kubric5D = the Kubric-5D archives (train parts, val, test) with their .sha256 files and
+Kubric5D_index.json; checkpoints = the model files. The benchmark archives are single files
+(curl commands in the README).
 
 Examples:
-    python scripts/download.py --tier Kubric5D --out data/Kubric5D
+    python scripts/download.py --tier Kubric5D --out data
+    python scripts/download.py --tier Kubric5D --out data --only 'Kubric5D_val*' 'Kubric5D_train_part0[0-2]*'
     python scripts/download.py --tier checkpoints --out checkpoints
     python scripts/download.py --manifest /path/to/manifest.jsonl --out /path/to/out
 '''
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import os
@@ -35,6 +38,9 @@ def parse_args():
     parser.add_argument('--manifest', type=str, default=None,
                         help='Local manifest path or URL (overrides --tier)')
     parser.add_argument('--out', type=str, required=True, help='Destination directory')
+    parser.add_argument('--only', type=str, nargs='*', default=None,
+                        help='Shell-style patterns on file names; only matching files are fetched '
+                             "(e.g. 'Kubric5D_val*' 'Kubric5D_train_part0[0-2]*')")
     parser.add_argument('--workers', type=int, default=8, help='Parallel downloads')
     parser.add_argument('--base-url', type=str, default=BASE_URL)
     args = parser.parse_args()
@@ -86,8 +92,11 @@ def main():
     args = parse_args()
     source = args.manifest or f'{args.base_url}/{MANIFEST_PREFIX}/{args.tier}.jsonl'
     entries = read_manifest(source)
+    if args.only:
+        entries = [e for e in entries
+                   if any(fnmatch.fnmatch(os.path.basename(e['key']), pat) for pat in args.only)]
     if not entries:
-        raise SystemExit(f'empty manifest: {source}')
+        raise SystemExit(f'no files selected from {source} (patterns: {args.only})')
     # Common key prefix = the tier folder on the bucket; files land relative to it.
     prefix = os.path.commonpath([e['key'] for e in entries]) if len(entries) > 1 \
         else os.path.dirname(entries[0]['key'])
