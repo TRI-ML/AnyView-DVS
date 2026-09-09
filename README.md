@@ -6,7 +6,7 @@ Toyota Research Institute
 
 Published in ECCV 2026
 
-[Paper](https://tri-ml.github.io/AnyView/AnyView.pdf) | [arXiv](https://arxiv.org/abs/2601.16982) | [Website](https://tri-ml.github.io/AnyView/) | [Results](https://tri-ml.github.io/AnyView/#results) | [Datasets](#anyviewbench) | [Models](#pretrained-models)
+[Paper](https://tri-ml.github.io/AnyView/AnyView.pdf) | [arXiv](https://arxiv.org/abs/2601.16982) | [Website](https://tri-ml.github.io/AnyView/) | [Results](https://tri-ml.github.io/AnyView/#results) | [Datasets](#anyviewbench) | [Model](#pretrained-model)
 
 ![AnyView method overview](docs/assets/method.png)
 
@@ -19,7 +19,7 @@ This repository contains the code published as part of our paper _"[AnyView: Syn
 Table of contents:
 
 - [Setup](#setup)
-- [Pretrained Models](#pretrained-models)
+- [Pretrained Model](#pretrained-model)
 - [Inference](#inference)
 - [AnyViewBench](#anyviewbench)
 - [Finetuning](#finetuning)
@@ -76,7 +76,7 @@ video and generates one target video. Clips have 1 + 4k frames (13, 29, or 41 in
 and a 576-pixel long side. Camera geometry enters the network as Plücker ray embeddings
 computed from per-frame extrinsics and intrinsics. There is no text conditioning.
 
-## Pretrained Models
+## Pretrained Model
 
 | File | Description | Download |
 | --- | --- | --- |
