@@ -14,7 +14,7 @@ Published in ECCV 2026
 embeddings) into one token stack, denoises with a diffusion transformer, and decodes the
 target view.*
 
-This repository contains the code published as part of our paper _"[AnyView: Synthesizing Any Novel View in Dynamic Scenes](https://tri-ml.github.io/AnyView/AnyView.pdf)"_ (abbreviated **AnyView**). We provide setup instructions, pretrained weights, inference code, the AnyViewBench evaluation suite, and finetuning code.
+This repository contains the code published as part of our paper _"[AnyView: Synthesizing Any Novel View in Dynamic Scenes](https://tri-ml.github.io/AnyView/AnyView.pdf)"_. We provide setup instructions, pretrained weights, inference code, the AnyViewBench evaluation suite, and finetuning code.
 
 Table of contents:
 
@@ -241,44 +241,10 @@ Kubric-5D as the example dataset; the paper trained on a mixture of more than te
 Adapting the script to other data means writing a loader that returns the same sample format
 as `anyview/kubric_dataset.py`.
 
-Kubric-5D scenes come in the unified scene layout (one directory per scene with
-`metadata.json`, `rgb/<camera>.mp4`, and `lowdim/`). They were generated with the
-[Kubric-5D pipeline](https://github.com/TRI-ML/Kubric-5D). The 10,000 scenes are split into
-train (`scn00000` to `scn09599`), val (`scn09600` to `scn09799`) and test (`scn09800` to
-`scn09999`); the kubric5d episodes of AnyViewBench are clips of test scenes. The archives, all
-under `https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/`:
-
-- `Kubric5D_tiny.tar.gz`: 100 training scenes for trying the finetuning script, 2.2 GB, extracts to `Kubric5D_tiny/`
-- `Kubric5D_val.tar.gz`: 200 scenes, 4.32 GB, extracts to `Kubric5D_val/`
-- `Kubric5D_test.tar.gz`: 200 scenes, 4.25 GB, extracts to `Kubric5D_test/`
-- `Kubric5D_train_part00.tar.gz` to `Kubric5D_train_part09.tar.gz`: 960 scenes each in scene order, 20.5 to 20.8 GB each (207 GB in total), all extract into `Kubric5D_train/`
-
-Each archive has a `.sha256` file next to it, and `Kubric5D_index.json` lists every archive
-with its size, checksum and scene range. One command downloads all of them (216 GB), checks
-every file against its sha256, and resumes if interrupted (complete files are skipped):
-
-```bash
-python scripts/download.py --tier Kubric5D --out data/
-```
-
-`--only` takes name patterns for a selection, e.g. `--only 'Kubric5D_val*' 'Kubric5D_test*'`
-or `--only 'Kubric5D_train_part0[0-2]*'`. The plain shell equivalent, followed by extraction
-(the train parts all land in `data/Kubric5D_train/`):
-
-```bash
-(
-set -e
-mkdir -p data && cd data
-for f in Kubric5D_val Kubric5D_test Kubric5D_train_part0{0..9}; do
-    curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/$f.tar.gz
-    curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/$f.tar.gz.sha256
-    sha256sum -c $f.tar.gz.sha256
-done
-for f in Kubric5D_*.tar.gz; do tar xzf $f; done
-)
-```
-
-The tiny subset alone:
+Kubric-5D is a set of 10,000 synthetic multi-view scenes with moving cameras; the dataset
+(splits, archives, generation code and data license) is described at
+[TRI-ML/Kubric-5D](https://github.com/TRI-ML/Kubric-5D). The 100-scene tiny subset is enough to
+try the script:
 
 ```bash
 (
@@ -288,6 +254,20 @@ curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/data
 curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/Kubric5D_tiny.tar.gz.sha256
 sha256sum -c Kubric5D_tiny.tar.gz.sha256 && tar xzf Kubric5D_tiny.tar.gz
 )
+```
+
+The full set is listed in the Kubric-5D repository; `python scripts/download.py --tier Kubric5D
+--out data/` fetches all of its archives, verifies every file, and resumes if interrupted
+(`--only 'Kubric5D_val*'` style patterns select archives; the train parts extract into
+`data/Kubric5D_train/`). The training script reads any directory of scenes in the unified layout:
+
+```
+data/Kubric5D_tiny/
+  scn00000/
+    metadata.json          cameras, resolution [384, 576], num_frames 60, framerate 24
+    rgb/cam00.mp4 ...      one video per camera
+    lowdim/cam00.npz ...   intrinsics (60, 3, 3), extrinsics (60, 4, 4) as cam2world
+  scn00001/ ...
 ```
 
 Each training sample is a random pair of cameras from one scene over a random window of 41
