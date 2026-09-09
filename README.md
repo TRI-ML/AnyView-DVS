@@ -14,7 +14,7 @@ Published in ECCV 2026
 embeddings) into one token stack, denoises with a diffusion transformer, and decodes the
 target view.*
 
-This repository contains the code published as part of our paper _"[AnyView: Synthesizing Any Novel View in Dynamic Scenes](https://tri-ml.github.io/AnyView/AnyView.pdf)"_ (abbreviated **AnyView**). We provide setup instructions, pretrained weights, inference code, the AnyViewBench evaluation suite, and finetuning code.
+This repository contains the code published as part of our paper _"[AnyView: Synthesizing Any Novel View in Dynamic Scenes](https://tri-ml.github.io/AnyView/AnyView.pdf)"_. We provide setup instructions, pretrained weights, inference code, the AnyViewBench evaluation suite, and finetuning code.
 
 Table of contents:
 
