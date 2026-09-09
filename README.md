@@ -6,11 +6,11 @@ Toyota Research Institute
 
 Published in ECCV 2026
 
-[Paper](https://tri-ml.github.io/AnyView/AnyView.pdf) | [arXiv](https://arxiv.org/abs/2601.16982) | [Website](https://tri-ml.github.io/AnyView/) | [Results](https://tri-ml.github.io/AnyView/#results) | [Datasets](#anyviewbench) | [Models](#pretrained-models)
+[Paper](https://tri-ml.github.io/AnyView/AnyView.pdf) | [arXiv](https://arxiv.org/abs/2601.16982) | [Website](https://tri-ml.github.io/AnyView/) | [Results](https://tri-ml.github.io/AnyView/#results) | [Datasets](#anyviewbench) | [Model](#pretrained-model)
 
 ![AnyView method overview](docs/assets/method.png)
 
-*AnyView encodes the input view's RGB frames and both views' camera trajectories (Plucker
+*AnyView encodes the input view's RGB frames and both views' camera trajectories (Plücker
 embeddings) into one token stack, denoises with a diffusion transformer, and decodes the
 target view.*
 
@@ -19,7 +19,7 @@ This repository contains the code published as part of our paper _"[AnyView: Syn
 Table of contents:
 
 - [Setup](#setup)
-- [Pretrained Models](#pretrained-models)
+- [Pretrained Model](#pretrained-model)
 - [Inference](#inference)
 - [AnyViewBench](#anyviewbench)
 - [Finetuning](#finetuning)
@@ -73,10 +73,10 @@ offline.
 The model is a 2-billion-parameter diffusion transformer built on
 [NVIDIA cosmos-predict2](https://github.com/nvidia-cosmos/cosmos-predict2). It takes one input
 video and generates one target video. Clips have 1 + 4k frames (13, 29, or 41 in the benchmark)
-and a 576-pixel long side. Camera geometry enters the network as Plucker ray embeddings
+and a 576-pixel long side. Camera geometry enters the network as Plücker ray embeddings
 computed from per-frame extrinsics and intrinsics. There is no text conditioning.
 
-## Pretrained Models
+## Pretrained Model
 
 | File | Description | Download |
 | --- | --- | --- |
@@ -243,15 +243,51 @@ as `anyview/kubric_dataset.py`.
 
 Kubric-5D scenes come in the unified scene layout (one directory per scene with
 `metadata.json`, `rgb/<camera>.mp4`, and `lowdim/`). They were generated with the
-[Kubric-5D pipeline](https://github.com/TRI-ML/Kubric-5D). `Kubric5D_tiny.tar.gz` is a
-100-scene subset of Kubric-5D for trying the finetuning script (100 scenes, 2.2 GB); the full
-10,000-scene set (217 GB) will be available through `python scripts/download.py --tier
-Kubric5D --out data/Kubric5D` once uploaded:
+[Kubric-5D pipeline](https://github.com/TRI-ML/Kubric-5D). The 10,000 scenes are split into
+train (`scn00000` to `scn09599`), val (`scn09600` to `scn09799`) and test (`scn09800` to
+`scn09999`); the kubric5d episodes of AnyViewBench are clips of test scenes. The archives, all
+under `https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/`:
+
+- `Kubric5D_tiny.tar.gz`: 100 training scenes for trying the finetuning script, 2.2 GB, extracts to `Kubric5D_tiny/`
+- `Kubric5D_val.tar.gz`: 200 scenes, 4.32 GB, extracts to `Kubric5D_val/`
+- `Kubric5D_test.tar.gz`: 200 scenes, 4.25 GB, extracts to `Kubric5D_test/`
+- `Kubric5D_train_part00.tar.gz` to `Kubric5D_train_part09.tar.gz`: 960 scenes each in scene order, 20.5 to 20.8 GB each (207 GB in total), all extract into `Kubric5D_train/`
+
+Each archive has a `.sha256` file next to it, and `Kubric5D_index.json` lists every archive
+with its size, checksum and scene range. One command downloads all of them (216 GB), checks
+every file against its sha256, and resumes if interrupted (complete files are skipped):
 
 ```bash
-curl -O https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/Kubric5D_tiny.tar.gz
-curl -O https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/Kubric5D_tiny.tar.gz.sha256
-sha256sum -c Kubric5D_tiny.tar.gz.sha256 && mkdir -p data && tar xzf Kubric5D_tiny.tar.gz -C data/
+python scripts/download.py --tier Kubric5D --out data/
+```
+
+`--only` takes name patterns for a selection, e.g. `--only 'Kubric5D_val*' 'Kubric5D_test*'`
+or `--only 'Kubric5D_train_part0[0-2]*'`. The plain shell equivalent, followed by extraction
+(the train parts all land in `data/Kubric5D_train/`):
+
+```bash
+(
+set -e
+mkdir -p data && cd data
+for f in Kubric5D_val Kubric5D_test Kubric5D_train_part0{0..9}; do
+    curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/$f.tar.gz
+    curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/$f.tar.gz.sha256
+    sha256sum -c $f.tar.gz.sha256
+done
+for f in Kubric5D_*.tar.gz; do tar xzf $f; done
+)
+```
+
+The tiny subset alone:
+
+```bash
+(
+set -e
+mkdir -p data && cd data
+curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/Kubric5D_tiny.tar.gz
+curl -fLO https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/datasets/anyview/Kubric5D_tiny.tar.gz.sha256
+sha256sum -c Kubric5D_tiny.tar.gz.sha256 && tar xzf Kubric5D_tiny.tar.gz
+)
 ```
 
 Each training sample is a random pair of cameras from one scene over a random window of 41
